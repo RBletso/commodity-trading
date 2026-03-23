@@ -1,0 +1,18 @@
+symbols:
+  - HG_F
+  - XAUUSD
+  - XAGUSD
+timeframe: D1
+initial_capital: 100000
+commission_bps: 1.0
+slippage_bps: 2.0
+risk:
+  max_risk_per_trade: 0.01
+  max_portfolio_risk: 0.05
+  max_leverage: 2.0
+  stop_loss_atr_multiplier: 2.0
+mt5:
+  login: null
+  password: null
+  server: null
+  path: null

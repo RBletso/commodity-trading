@@ -1,94 +1,47 @@
-import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 import yfinance as yf
 
-from spark_spread import (
-    spark_spread, 
-    dark_spread,
-    DEFAULT_COAL_EMISSION_FACTOR
-)
+from trading_bot.strategies.commodity_specialized import clean_spark_spread, spark_spread_signal
+
 
 def run_analysis():
-    # --- Fetch TTF gas ---
-    ttf = yf.download('TTF=F', start='2024-01-01')['Close']
-    ttf.name = 'Gas'
-    ttf.dropna(inplace=True)
+    gas = yf.download("TTF=F", start="2023-01-01")["Close"].dropna().squeeze()
+    power = yf.download("DEBAS=F", start="2023-01-01")["Close"].dropna().squeeze()
+    carbon = yf.download("CO2.L", start="2023-01-01")["Close"].dropna().squeeze()
 
-    # --- Synthetic coal price ---
-    coal_price = ttf * 0.6
-    coal_price.name = "Coal"
-
-    # --- Parameters ---
-    heat_rate_gas = 7.5
-    carbon_price = 25.0
-    emission_factor_gas = 0.2
-
-    heat_rate_coal = 10.0
-    emission_factor_coal = DEFAULT_COAL_EMISSION_FACTOR
-
-    # --- Breakeven + Synthetic Power ---
-    breakeven = (ttf * heat_rate_gas) + (carbon_price * emission_factor_gas)
-    power_price = breakeven * 1.10
-
-    # --- Spark Spread ---
-    spark_vals = spark_spread(
-        power_price, ttf, heat_rate_gas,
-        carbon_price=carbon_price,
-        emission_factor=emission_factor_gas
-    )
-
-    # --- Dark Spread ---
-    dark_vals = dark_spread(
-        power_price, coal_price, heat_rate_coal,
-        carbon_price=carbon_price,
-        emission_factor=emission_factor_coal
-    )
-
-    df = pd.DataFrame({
-        "Gas": ttf,
-        "Coal": coal_price,
-        "Power": power_price,
-        "Spark": spark_vals,
-        "Dark": dark_vals
-    })
-
+    df = pd.concat([gas.rename("gas"), power.rename("power"), carbon.rename("carbon")], axis=1).dropna()
+    df["spark"] = clean_spark_spread(df["power"], df["gas"], df["carbon"], heat_rate=7.2, emission_factor=0.202)
+    sig_df = spark_spread_signal(df["spark"], entry_z=-1.0, exit_z=0.3, lookback=60)
+    df = df.join(sig_df[["z", "signal"]], how="left")
+    df["pnl"] = df["signal"].shift(1).fillna(0) * df["spark"].diff().fillna(0)
+    df["cum_pnl"] = df["pnl"].cumsum()
     return df
 
 
 def plot_all():
     df = run_analysis()
 
-    # --- Spark Spread ---
-    plt.figure(figsize=(12,4))
-    plt.plot(df.index, df["Spark"], label="Spark Spread (Gas)", color="orange")
-    plt.title("Spark Spread")
-    plt.ylabel("€/MWh")
-    plt.grid(True)
-    plt.savefig("charts/spark_spread_curve.png")
-    plt.close()
+    fig, axes = plt.subplots(3, 1, figsize=(12, 10), sharex=True)
+    axes[0].plot(df.index, df["spark"], label="Clean Spark Spread", color="orange")
+    axes[0].set_title("Clean Spark Spread")
+    axes[0].grid(alpha=0.3)
 
-    # --- Dark Spread ---
-    plt.figure(figsize=(12,4))
-    plt.plot(df.index, df["Dark"], label="Dark Spread (Coal)", color="brown")
-    plt.title("Dark Spread")
-    plt.ylabel("€/MWh")
-    plt.grid(True)
-    plt.savefig("charts/dark_spread_curve.png")
-    plt.close()
+    axes[1].plot(df.index, df["z"], label="Z-Score", color="teal")
+    axes[1].axhline(-1.0, linestyle="--", color="green")
+    axes[1].axhline(0.3, linestyle="--", color="red")
+    axes[1].fill_between(df.index, -3, 3, where=df["signal"] == 1, color="green", alpha=0.15)
+    axes[1].set_title("Signal Regime")
+    axes[1].grid(alpha=0.3)
 
-    # --- Combined ---
-    plt.figure(figsize=(12,4))
-    plt.plot(df.index, df["Spark"], label="Spark Spread (Gas)", color="orange")
-    plt.plot(df.index, df["Dark"], label="Dark Spread (Coal)", color="brown")
-    plt.title("Spark vs Dark Spread")
-    plt.ylabel("€/MWh")
-    plt.grid(True)
-    plt.legend()
-    plt.savefig("charts/spark_vs_dark.png")
-    plt.close()
+    axes[2].plot(df.index, df["cum_pnl"], label="Cumulative PnL", color="purple")
+    axes[2].axhline(0, color="black", linestyle="--", linewidth=0.8)
+    axes[2].set_title("Long Spark Mean Reversion PnL")
+    axes[2].grid(alpha=0.3)
 
-    print("Charts saved to /charts/")
+    plt.tight_layout()
+    plt.savefig("spark_spread.png")
+    print("Saved spark_spread.png")
 
 
 if __name__ == "__main__":
