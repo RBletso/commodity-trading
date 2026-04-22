@@ -99,7 +99,7 @@ class CalendarSeasonal(BaseStrategy):
     def generate_signal(self, data: pd.DataFrame, context: StrategyContext) -> pd.Series:
         # Simple commodity-aware seasonality proxy: long Nov-Apr.
         months = data.index.month
-        return ((months >= 11) | (months <= 4)).astype(int)
+        return pd.Series(((months >= 11) | (months <= 4)).astype(int), index=data.index)
 
 
 class PairSpreadZScore(BaseStrategy):
@@ -124,6 +124,16 @@ class VolumePriceBreakout(BaseStrategy):
         return ((data["close"] > price_hi.shift(1)) & (data["volume"] > 1.3 * vol_ma)).astype(int)
 
 
+class CoffeeOriginDriver(BaseStrategy):
+    name = "coffee_origin_driver"
+
+    def generate_signal(self, data: pd.DataFrame, context: StrategyContext) -> pd.Series:
+        from .commodity_specialized import coffee_origin_dashboard
+
+        dashboard = coffee_origin_dashboard(data)
+        return dashboard["signal"].astype(int)
+
+
 STRATEGY_REGISTRY = {
     cls.name: cls
     for cls in [
@@ -137,6 +147,7 @@ STRATEGY_REGISTRY = {
         CalendarSeasonal,
         PairSpreadZScore,
         VolumePriceBreakout,
+        CoffeeOriginDriver,
     ]
 }
 

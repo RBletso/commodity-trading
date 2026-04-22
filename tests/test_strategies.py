@@ -14,13 +14,27 @@ def _sample_df(n=200):
             "low": close * 0.99,
             "volume": 1000,
             "pair_close": close * 0.98,
+            "arabica_close": close,
+            "robusta_close": close * 0.80,
+            "brazil_rainfall": 100,
+            "brazil_temperature": 24,
+            "vietnam_rainfall": 110,
+            "vietnam_temperature": 28,
+            "colombia_rainfall": 120,
+            "colombia_temperature": 22,
+            "brl": 5.0,
+            "usd_strength": 100,
+            "arabica_nearby": close,
+            "arabica_deferred": close * 0.99,
+            "robusta_nearby": close * 0.80,
+            "robusta_deferred": close * 0.79,
         },
         index=idx,
     )
 
 
-def test_registry_has_ten_strategies():
-    assert len(STRATEGY_REGISTRY) == 10
+def test_registry_has_eleven_strategies():
+    assert len(STRATEGY_REGISTRY) == 11
 
 
 def test_all_strategies_emit_series():
