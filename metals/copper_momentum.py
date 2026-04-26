@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import yfinance as yf
+from pathlib import Path
 
 from trading_bot.strategies.commodity_specialized import copper_momentum_signal
 
@@ -32,8 +33,9 @@ def run():
     ax2.grid(alpha=0.3)
 
     plt.tight_layout()
-    plt.savefig("copper_momentum.png")
-    print("Saved copper_momentum.png")
+    output_path = Path(__file__).with_name("copper_momentum.png")
+    plt.savefig(output_path)
+    print(f"Saved {output_path}")
 
 
 if __name__ == "__main__":

@@ -5,10 +5,11 @@ import pandas as pd
 # CORE HELPER FUNCTIONS
 # ----------------------------------------
 
+
 def fuel_cost_per_mwh(fuel_price, heat_rate):
     """
     Convert a fuel price (gas or coal) into cost per MWh of electricity.
-    
+
     fuel_price: €/MWh_th
     heat_rate: MMBtu/MWh_el (higher = worse efficiency)
     """
@@ -18,7 +19,7 @@ def fuel_cost_per_mwh(fuel_price, heat_rate):
 def carbon_cost_per_mwh(carbon_price, emission_factor):
     """
     Convert carbon allowance price into cost per MWh of electricity.
-    
+
     carbon_price: €/tCO2
     emission_factor: tonnes CO2 per MWh_el
     """
@@ -29,10 +30,11 @@ def carbon_cost_per_mwh(carbon_price, emission_factor):
 # SPARK SPREAD (GAS)
 # ----------------------------------------
 
+
 def spark_spread(power_price, gas_price, heat_rate, carbon_price=None, emission_factor=None):
     """
     Dirty or Clean Spark Spread depending on whether carbon inputs are provided.
-    
+
     power_price: €/MWh_el
     gas_price: €/MWh_th (TTF is already in this unit)
     heat_rate: MMBtu/MWh_el
@@ -53,22 +55,26 @@ def clean_spark_spread(power_price, gas_price, heat_rate, carbon_price, emission
     """
     Clean Spark Spread (always includes carbon).
     """
-    return spark_spread(power_price, gas_price, heat_rate,
-                        carbon_price=carbon_price,
-                        emission_factor=emission_factor)
+    return spark_spread(
+        power_price,
+        gas_price,
+        heat_rate,
+        carbon_price=carbon_price,
+        emission_factor=emission_factor,
+    )
 
 
 # ----------------------------------------
 # DARK SPREAD (COAL)
 # ----------------------------------------
 
-DEFAULT_COAL_EMISSION_FACTOR = 0.9   # tonnes CO2 per MWh_el (typical coal plant)
+DEFAULT_COAL_EMISSION_FACTOR = 0.9  # tonnes CO2 per MWh_el (typical coal plant)
 
 
 def dark_spread(power_price, coal_price, coal_heat_rate, carbon_price=None, emission_factor=DEFAULT_COAL_EMISSION_FACTOR):
     """
     Dirty or Clean Dark Spread.
-    
+
     coal_price: €/MWh_th (synthetic or real coal input)
     coal_heat_rate: MMBtu/MWh_el (coal less efficient: ~9–12)
     carbon_price: €/tCO2
@@ -88,14 +94,19 @@ def clean_dark_spread(power_price, coal_price, coal_heat_rate, carbon_price, emi
     """
     Clean Dark Spread (coal with carbon cost).
     """
-    return dark_spread(power_price, coal_price, coal_heat_rate,
-                       carbon_price=carbon_price,
-                       emission_factor=emission_factor)
+    return dark_spread(
+        power_price,
+        coal_price,
+        coal_heat_rate,
+        carbon_price=carbon_price,
+        emission_factor=emission_factor,
+    )
 
 
 # ----------------------------------------
 # DATAFRAME HELPERS FOR CURVES
 # ----------------------------------------
+
 
 def add_spark_columns(df, heat_rate, carbon_price=None, emission_factor=None):
     """

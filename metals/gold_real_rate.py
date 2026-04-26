@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import yfinance as yf
+from pathlib import Path
 
 from trading_bot.strategies.commodity_specialized import gold_real_rate_signal
 
@@ -29,8 +30,9 @@ def run():
     axes[1].grid(alpha=0.3)
 
     plt.tight_layout()
-    plt.savefig("gold_real_rate.png")
-    print("Saved gold_real_rate.png")
+    output_path = Path(__file__).with_name("gold_real_rate.png")
+    plt.savefig(output_path)
+    print(f"Saved {output_path}")
 
 
 if __name__ == "__main__":

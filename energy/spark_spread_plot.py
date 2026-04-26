@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import yfinance as yf
+from pathlib import Path
 
 from trading_bot.strategies.commodity_specialized import clean_spark_spread, spark_spread_signal
 
@@ -40,8 +41,9 @@ def plot_all():
     axes[2].grid(alpha=0.3)
 
     plt.tight_layout()
-    plt.savefig("spark_spread.png")
-    print("Saved spark_spread.png")
+    output_path = Path(__file__).with_name("spark_spread.png")
+    plt.savefig(output_path)
+    print(f"Saved {output_path}")
 
 
 if __name__ == "__main__":

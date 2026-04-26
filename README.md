@@ -11,8 +11,9 @@ Python framework for swing-trading commodities with:
 
 ## Project Layout
 
-- `spark-spread/` → spark spread models/scripts (kept together in original folder layout)
+- `energy/` → energy-specific scripts and notebooks (`spark_spread.py`, `spark_spread_plot.py`)
 - `metals/` → metal-specific scripts (`copper_momentum.py`, `gold_real_rate.py`)
+- `softs/` → soft commodity scripts (`coffee_origin.py`)
 - `trading_bot/` → reusable bot framework modules (config, risk, MT5, backtesting, strategies)
 
 ## Quick Start
@@ -34,7 +35,8 @@ Run commodity scripts:
 ```bash
 python metals/copper_momentum.py
 python metals/gold_real_rate.py
-python spark-spread/spark_spread_plot.py
+python energy/spark_spread_plot.py
+python softs/coffee_origin.py
 ```
 
 ## Included Swing Strategies (optional, commodity-friendly)
@@ -88,6 +90,8 @@ freight, certified_stocks, exports
 ```
 
 Only `arabica_close` and `robusta_close` are required. Missing optional columns are treated as neutral.
+
+`softs/coffee_origin.py` gives you a simple demo runner and plot for the coffee dashboard. It uses live Arabica data plus a temporary Robusta proxy until you wire in a dedicated Robusta feed.
 
 ## Notes
 - MT5 client gracefully degrades if `MetaTrader5` package is unavailable.
