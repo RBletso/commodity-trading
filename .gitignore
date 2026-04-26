@@ -6,3 +6,10 @@ __pycache__/
 *.pyd
 *$py.class
 .pytest_cache/
+.venv/
+venv/
+env/
+ENV/
+bot.log
+*.log
+*.png
